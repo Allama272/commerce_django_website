@@ -1,0 +1,26 @@
+{% extends "auctions/layout.html" %}
+{% block body %}
+<h1><span style="color:#FFA200;">Watching:</span></h1>
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+    {%for listing in listings%}
+    <div class="col">
+        <div class="card h-100">
+            <img class="card-img-top" src={{listing.photo}} alt="Card image cap">
+            <div class="card-body">
+                <h5 class="card-title">{{listing.title}}</h5>
+                <h7 class="card-subtitle mb-2 text-muted">
+                    Starting At: <span style="color:#007BFF;"></text><b>{{listing.price}}$</b></span>
+                </h7>
+                <p class="card-text">{{listing.description|truncatewords:10}}</p>
+                <a href="{% url 'item' listing.id %}" class="btn btn-primary">Highest Bid: {{listing.highest_bid}}</a>
+            </div>
+            <div class="card-footer text-muted">
+                {{listing.created_date|date:"F d Y P"}}
+            </div>
+        </div>
+    </div>
+    {%endfor%}
+</div>
+
+{% endblock %}

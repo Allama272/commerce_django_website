@@ -1,0 +1,148 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+{% if not listing.active and request.user.id == highest_bidder.user.id %}
+<script>
+    Swal.fire({title:"Congrats",
+                text:"Congratulation {{request.user|title}}, You Have Won The Auction!",
+                color:"#FFA200",
+                icon:"success",
+                iconColor:"#007BFF",
+                confirmButtonText:"Dismiss",
+                confirmButtonColor:"#007BFF"
+                });
+</script>
+{% endif %}
+{% for msg in messages%}
+<div class="alert alert-warning alert-dismissible fade show" role="alert" style="text-align: center;">
+    <strong>{{ msg }} </strong>
+</div>
+{%endfor%}
+<h1>Listing: <span style="color:#007BFF;">{{listing.title|title}}</span></h1>
+
+{% if not listing.active %}
+<h1><span class="badge badge-pill badge-danger">CLOSED</span>
+</h1>
+{% endif %}
+
+{% if not watching %}
+<form style="margin-left: 5px;" action="{% url 'add_watchlist' listing.id %}" method="post">
+    {%csrf_token%}
+
+    <button type="submit" class="btn btn-primary btn-sm"
+            style="background-color:#FFA200; border-color:#FFA200; border-radius: 30px; font-weight: bold;">
+        Add To Watchlist
+    </button>
+</form>
+{% endif %}
+
+{% if watching %}
+<div class="row" style="margin-left: 1vw;">
+
+    <form style="margin-left: 5px;" action="{% url 'remove_watchlist' listing.id %}" method="post">
+        {%csrf_token%}
+        <button type="submit" class="btn btn-pill btn-primary btn-sm" style="border-radius: 30px; font-weight: bold;">
+            Watchlist
+            <span class="badge badge-pill badge-danger"
+                  style="padding: 0.1em 0.4em 0.25em; font-weight: bolder;">x</span>
+        </button>
+    </form>
+</div>
+{% endif %}
+
+
+<div class="row" style="padding-top: 3vh; color:#464646;">
+    <div class="col-1"></div>
+
+    <div class="col-4">
+        <br>
+        <h1><span style="color:#007BFF;">{{listing.title|title}}</span></h1>
+        <h5> By: {{listing.owner|title}} </h5>
+        <h5> Category: {{listing.get_category_display}} </h5>
+        <h5>Starting Price: {{listing.price}}$</h5>
+        <br>
+        <h5>Total Bids: {{total_biddings}}</h5>
+
+        {% if highest_bidder %}
+        <h5>Highest Bid: <span style="color:#FFA200;"> {{highest_bidder.price}}$ </span></h5>
+        <h5>Highest Bidder:<span style="color:#FFA200;"> {{highest_bidder_name|title}} </span></h5>
+        {% endif %}
+
+        <form action="{% url 'item' listing.id %}" method="post">
+            <div class="form-group ">
+                {%csrf_token%}
+                {{bid_form}}
+            </div>
+            <button type="submit" class="btn bt btn-primary">Place Bid</button>
+        </form>
+        {% if user.id == listing.owner.id %}
+        <form action="{% url 'close_auction' listing.id %}" method="post">
+            {%csrf_token%}
+            <button type="submit" class="btn bt btn-danger" style="margin-top: 0.5em">Close Auction</button>
+        </form>
+        {% endif %}
+    </div>
+    <div class="col-1"></div>
+    <div class="col-4">
+        <img src={{listing.photo}} class="img-fluid-thumbnail" alt="item photo" style="height: 80vh">
+    </div>
+    <div class="col-2"></div>
+</div>
+
+
+<!-- Description -->
+
+<div class="row" style="margin-top: 5vh">
+    <div class="col-1"></div>
+    <div class="col-10">
+        <h2>Description: </h2>
+        <h6 style="color:#545454;"> {{listing.description}}</h6>
+    </div>
+    <div class="col-1"></div>
+</div>
+
+
+<h2 style="padding-left:8.1vw; padding-top:8vh ">Comments: </h2>
+
+
+<div class="row" style="padding-top: 3vh">
+
+    <div class="col-1"></div>
+    <div class="col-10">
+        <h3 class="card-title"><span style="color:#007BFF; margin-left:5px;"> {{ user.username|title }}: </span></h3>
+        <form action="{% url 'new_comment' listing.id %}" method="post">
+            <div class="form-group">
+                {%csrf_token%}
+                {{comment_form}}
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-left:2px;">Comment</button>
+        </form>
+    </div>
+    <div class="col-1"></div>
+
+</div>
+</form>
+
+<!-- posted comments  -->
+{% for comment in comments %}
+<div class="row" style="padding-top: 3vh">
+
+    <div class="col-1"></div>
+    <div class="col-10">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title"><span style="color:#007BFF;"> {{ comment.user.username|title }} </span></h3>
+                <h6 class="card-subtitle mb-2 text-muted"><span style="color:#FFA200;">
+                    {{ comment.created_date|date:"F d Y P" }} </span></h6>
+                <p class="card-text"> {{comment.text}} </p>
+            </div>
+            <div class="col-1"></div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
